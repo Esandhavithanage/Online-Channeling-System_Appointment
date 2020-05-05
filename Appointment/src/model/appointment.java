@@ -29,18 +29,19 @@ public class appointment {
 				return "Error while connecting to the database for readline";
 			}
 
-			String sql = "INSERT INTO `appoinment`(`appoinmentDate`,`patientId`, `paymentId`, `docId`, `hospitalId`) VALUES (?,?,?,?,?)";
+			String sql = "INSERT INTO `appoinment`(`appoinmentDate`,`Description`,`patientId`, `paymentId`, `docId`, `hospitalId`) VALUES (?,?,?,?,?,?)";
 
 			PreparedStatement statement = con.prepareStatement(sql);
 
 			statement.setDate(1,java.sql.Date.valueOf(appointmentData.getAppointmentDate()));
-			statement.setInt(2, appointmentData.getPatientId());
+			statement.setString(2, appointmentData.getDescription());
+			statement.setInt(3, appointmentData.getPatientId());
 			statement.setInt(3, appointmentData.getPaymentId());
 			statement.setInt(4, appointmentData.getDocId());
 			statement.setInt(5, appointmentData.getHospitalId());
 			statement.execute();
 
-			output = "Inserted successfully";
+			
 			con.close();
 
 		} catch (SQLException e) {
@@ -48,7 +49,8 @@ public class appointment {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-
+		String newRead = getApointment();
+		output = "{\"status\":,\"success\",\"data\":\""+newRead+"\"}";
 		return output;
 	}
 	
@@ -101,16 +103,24 @@ public class appointment {
 		
 		return resultSet;
 	}
-
-	public ArrayList<appointmentPOJO> getApointmentBypatientAndDate(int pid) {
+	public String getApointment() {
 		String output = "";
-		ArrayList<appointmentPOJO> resultSet = new ArrayList<appointmentPOJO>();
-
+		 output = "<table border=\'1\'>"
+		 		+ "<tr>"
+		 		+ "<th>appoinmentId</th>"
+		 		+ "<th>appoinmentDate</th>"
+		 		+ "<th>docter Name</th>"
+		 		+ "<th>hospital Name</th>"
+		 		+ "<th>amount</th>"
+		 		+ "<th>Description</th>"
+		 		+ "<th>Update</th>"
+		 		+ "<th>Remove</th>"
+		 		+ "</tr>";
 		try {
 			Connection con = connect();
 
 			if (con == null) {
-				return resultSet;
+				return "Errorwhile connecting to db";
 			}
 
 			String query = "SELECT a.appoinmentId,a.appoinmentDate,d.fName,h.hospitalName,py.amount,a.docId,a.hospitalId,a.patientId,a.paymentId " + 
@@ -120,37 +130,36 @@ public class appointment {
 					"INNER JOIN doctor d " + 
 					"ON a.docId = d.docId " + 
 					"INNER JOIN hospital h " + 
-					"ON a.hospitalId = h.hospitalId "
-					+"WHERE a.patientId = ?";
+					"ON a.hospitalId = h.hospitalId";
 				
 			PreparedStatement statement = con.prepareStatement(query);
-
-			statement.setInt(1,pid);
 			ResultSet set = statement.executeQuery();
 
 			while (set.next()) {
-				appointmentPOJO appointmentPOJO = new appointmentPOJO();
-				appointmentPOJO.setAppointmentID(set.getInt("appoinmentId"));
-				appointmentPOJO.setDocName(set.getString("fName"));
-				appointmentPOJO.setHospitalName(set.getString("hospitalName"));
-				appointmentPOJO.setPayment(set.getDouble("amount"));
-				appointmentPOJO.setDocId(set.getInt("docId"));
-				appointmentPOJO.setHospitalId(set.getInt("hospitalId"));
-				appointmentPOJO.setPatientId(set.getInt("patientId"));
-				appointmentPOJO.setPaymentId(set.getInt("paymentId"));
-				appointmentPOJO.setAppointmentDate(String.valueOf(set.getDate("appoinmentDate")));
-				resultSet.add(appointmentPOJO);
-				System.out.println(appointmentPOJO.getAppointmentDate());
-				System.out.println(appointmentPOJO.getAppointmentID());
-			   
 				
+				int appoinmentId= set.getInt("appoinmentId");
+				String Dname = set.getString("fName");
+				String Hname = set.getString("hospitalName");
+				Double amount = set.getDouble("amount");
+				String date = String.valueOf(set.getDate("appoinmentDate"));
+				String Description = set.getString("Description");
+				 output += "<tr><td><input id=\"hidItemIdUpdate\" value=\"" + appoinmentId + "\" name=\"hidItemIdUpdate\" type=\"hidden\"> "+ appoinmentId +" </td>";
+				 output += "<td>" + date + "</td>";
+				 output += "<td>" + Dname + "</td>";
+				 output += "<td>" + Hname + "</td>";
+				 output += "<td>" + amount + "</td>";
+				 output += "<td>" + Description + "</td>";
+
+			 // buttons
+			 output += "<td><input name=\"btnUpdate\" type=\"button\"value=\"Update\" class=\"btnUpdate btn btn-secondary\"></td>"
+					+ "<td><input name=\"btnRemove\" data-appid='"+appoinmentId+"'type=\"submit\" value=\"Remove\"class=\"btnRemove btn btn-danger\"></td></tr>";
 			}
 			con.close();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-		
-		return resultSet;
+		output += "</table>";
+		return output;
 	}
 
 	public ArrayList<appointmentPOJO> getApointmentByhospitalAndDate(int hid, String date) {
@@ -222,7 +231,8 @@ public class appointment {
 			statement.setInt(3, appointmentData.getAppointmentID());
 			statement.execute();
 
-			output = "Updated successfully";
+			String newRead = getApointment();
+			output = "{\"status\":,\"success\",\"data\":\""+newRead+"\"}";
 			con.close();
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
@@ -249,7 +259,8 @@ public class appointment {
 			statement.setInt(1, appointmentData.getAppointmentID());
 			statement.execute();
 
-			output = "Deleted successfully";
+			String newRead = getApointment();
+			output = "{\"status\":,\"success\",\"data\":\""+newRead+"\"}";
 			con.close();
 
 		} catch (SQLException e) {
@@ -260,5 +271,6 @@ public class appointment {
 
 		return output;
 	}
+
 	
 }
