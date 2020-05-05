@@ -58,20 +58,19 @@ public class appointmentService {
 		
 		return appointment.getApointmentBydocAndDate(did, date);
 	}
-	
+
 	@POST
 	@Path("/bypatient")
 	@Produces(MediaType.APPLICATION_JSON)
 	public ArrayList<appointmentPOJO> getAppointmentbypatient(String appointmentData) {
 		System.out.println(appointmentData);
 		JsonObject jsonObject = new JsonParser().parse(appointmentData).getAsJsonObject();
-	
-		String date = jsonObject.get("date").getAsString();
+
 		int pid = jsonObject.get("patientId").getAsInt();
 		appointment appointment = new appointment();
 		
 		
-		return appointment.getApointmentBypatientAndDate(pid, date);
+		return appointment.getApointmentBypatientAndDate(pid);
 	}
 	
 	@POST

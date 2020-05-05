@@ -102,7 +102,7 @@ public class appointment {
 		return resultSet;
 	}
 
-	public ArrayList<appointmentPOJO> getApointmentBypatientAndDate(int pid, String date) {
+	public ArrayList<appointmentPOJO> getApointmentBypatientAndDate(int pid) {
 		String output = "";
 		ArrayList<appointmentPOJO> resultSet = new ArrayList<appointmentPOJO>();
 
@@ -121,12 +121,11 @@ public class appointment {
 					"ON a.docId = d.docId " + 
 					"INNER JOIN hospital h " + 
 					"ON a.hospitalId = h.hospitalId "
-					+"WHERE a.patientId = ? AND a.appoinmentDate =?";
+					+"WHERE a.patientId = ?";
 				
 			PreparedStatement statement = con.prepareStatement(query);
 
 			statement.setInt(1,pid);
-			statement.setDate(2,java.sql.Date.valueOf(date));
 			ResultSet set = statement.executeQuery();
 
 			while (set.next()) {
