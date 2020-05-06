@@ -55,8 +55,11 @@ public class appointmentAPI extends HttpServlet {
 	 * @see HttpServlet#doPut(HttpServletRequest, HttpServletResponse)
 	 */
 	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		System.out.println(request);
 		Map paras = getParasMap(request);	
 		appointmentPOJO appointmentData = new appointmentPOJO();
+		System.out.println(paras.get("AppointmentDate"));
+		appointmentData.setAppointmentID(Integer.parseInt(paras.get("hidItemIDSave").toString()));
 		appointmentData.setAppointmentDate(paras.get("AppointmentDate").toString());
 		appointmentData.setDescription(paras.get("Description").toString());
 		appointmentData.setDocId(Integer.parseInt(paras.get("DocId").toString()));
@@ -70,8 +73,9 @@ public class appointmentAPI extends HttpServlet {
 	 */
 	protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Map paras = getParasMap(request);
+		System.out.println(paras);
 		appointmentPOJO appointmentData = new appointmentPOJO();
-		appointmentData.setAppointmentDate(paras.get("AppointmentDate").toString());
+		appointmentData.setAppointmentID(Integer.parseInt(paras.get("AppointmentID").toString()));
 		String	 output = appointment.deleteappoitment(appointmentData);
 		response.getWriter().write(output);
 	}

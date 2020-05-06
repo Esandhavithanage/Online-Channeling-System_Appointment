@@ -5,8 +5,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.google.gson.JsonObject;
+
 public class appointment {
-	
+
 	private Connection connect() {
 		Connection connection = null;
 		try {
@@ -33,15 +35,14 @@ public class appointment {
 
 			PreparedStatement statement = con.prepareStatement(sql);
 
-			statement.setDate(1,java.sql.Date.valueOf(appointmentData.getAppointmentDate()));
+			statement.setDate(1, java.sql.Date.valueOf(appointmentData.getAppointmentDate()));
 			statement.setString(2, appointmentData.getDescription());
 			statement.setInt(3, appointmentData.getPatientId());
-			statement.setInt(3, appointmentData.getPaymentId());
-			statement.setInt(4, appointmentData.getDocId());
-			statement.setInt(5, appointmentData.getHospitalId());
+			statement.setInt(4, appointmentData.getPaymentId());
+			statement.setInt(5, appointmentData.getDocId());
+			statement.setInt(6, appointmentData.getHospitalId());
 			statement.execute();
 
-			
 			con.close();
 
 		} catch (SQLException e) {
@@ -50,11 +51,14 @@ public class appointment {
 			System.out.println(e.getMessage());
 		}
 		String newRead = getApointment();
-		output = "{\"status\":,\"success\",\"data\":\""+newRead+"\"}";
-		return output;
+
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("status", "success");
+		jsonObject.addProperty("data", newRead);
+		return jsonObject.toString();
 	}
-	
-	public ArrayList<appointmentPOJO> getApointmentBydocAndDate(int DocID,String date) {
+
+	public ArrayList<appointmentPOJO> getApointmentBydocAndDate(int DocID, String date) {
 		String output = "";
 		ArrayList<appointmentPOJO> resultSet = new ArrayList<appointmentPOJO>();
 
@@ -65,18 +69,14 @@ public class appointment {
 				return resultSet;
 			}
 
-			String query = "SELECT a.appoinmentId,a.appoinmentDate,p.fNmae,h.hospitalName,py.amount,a.docId,a.hospitalId,a.patientId,a.paymentId " + 
-					"FROM appoinment a " + 
-					"INNER JOIN payment py " + 
-					"ON a.paymentId = py.paymentId " + 
-					"INNER JOIN patient p " + 
-					"ON a.patientId = p.patientId " + 
-					"INNER JOIN hospital h " + 
-					"ON a.hospitalId = h.hospitalId WHERE a.docId=? AND a.appoinmentDate=?";
+			String query = "SELECT a.appoinmentId,a.appoinmentDate,p.fNmae,h.hospitalName,py.amount,a.docId,a.hospitalId,a.patientId,a.paymentId "
+					+ "FROM appoinment a " + "INNER JOIN payment py " + "ON a.paymentId = py.paymentId "
+					+ "INNER JOIN patient p " + "ON a.patientId = p.patientId " + "INNER JOIN hospital h "
+					+ "ON a.hospitalId = h.hospitalId WHERE a.docId=? AND a.appoinmentDate=?";
 			PreparedStatement statement = con.prepareStatement(query);
 
-			statement.setInt(1,DocID);
-			statement.setDate(2,java.sql.Date.valueOf(date));
+			statement.setInt(1, DocID);
+			statement.setDate(2, java.sql.Date.valueOf(date));
 			ResultSet set = statement.executeQuery();
 
 			while (set.next()) {
@@ -93,29 +93,21 @@ public class appointment {
 				resultSet.add(appointmentPOJO);
 				System.out.println(appointmentPOJO.getAppointmentDate());
 				System.out.println(appointmentPOJO.getAppointmentID());
-			   
-				
+
 			}
 			con.close();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-		
+
 		return resultSet;
 	}
+
 	public String getApointment() {
 		String output = "";
-		 output = "<table border=\'1\'>"
-		 		+ "<tr>"
-		 		+ "<th>appoinmentId</th>"
-		 		+ "<th>appoinmentDate</th>"
-		 		+ "<th>docter Name</th>"
-		 		+ "<th>hospital Name</th>"
-		 		+ "<th>amount</th>"
-		 		+ "<th>Description</th>"
-		 		+ "<th>Update</th>"
-		 		+ "<th>Remove</th>"
-		 		+ "</tr>";
+		output = "<table border=\'1\'>" + "<tr>" + "<th>appoinmentId</th>" + "<th>appoinmentDate</th>"
+				+ "<th>docter Name</th>" + "<th>hospital Name</th>" + "<th>amount</th>" + "<th>Description</th>"
+				+ "<th>Update</th>" + "<th>Remove</th>" + "</tr>";
 		try {
 			Connection con = connect();
 
@@ -123,36 +115,38 @@ public class appointment {
 				return "Errorwhile connecting to db";
 			}
 
-			String query = "SELECT a.appoinmentId,a.appoinmentDate,d.fName,h.hospitalName,py.amount,a.docId,a.hospitalId,a.patientId,a.paymentId " + 
-					"FROM appoinment a " + 
-					"INNER JOIN payment py " + 
-					"ON a.paymentId = py.paymentId " + 
-					"INNER JOIN doctor d " + 
-					"ON a.docId = d.docId " + 
-					"INNER JOIN hospital h " + 
-					"ON a.hospitalId = h.hospitalId";
-				
+			String query = "SELECT a.appoinmentId,a.appoinmentDate,a.Description,d.fName,h.hospitalName,py.amount,a.docId,a.hospitalId,a.patientId,a.paymentId "
+					+ "FROM appoinment a " + "INNER JOIN payment py " + "ON a.paymentId = py.paymentId "
+					+ "INNER JOIN doctor d " + "ON a.docId = d.docId " + "INNER JOIN hospital h "
+					+ "ON a.hospitalId = h.hospitalId";
+
 			PreparedStatement statement = con.prepareStatement(query);
 			ResultSet set = statement.executeQuery();
 
 			while (set.next()) {
-				
-				int appoinmentId= set.getInt("appoinmentId");
+
+				int appoinmentId = set.getInt("appoinmentId");
+				int dId = set.getInt("docId");
+				int hId = set.getInt("hospitalId");
 				String Dname = set.getString("fName");
 				String Hname = set.getString("hospitalName");
 				Double amount = set.getDouble("amount");
 				String date = String.valueOf(set.getDate("appoinmentDate"));
 				String Description = set.getString("Description");
-				 output += "<tr><td><input id=\"hidItemIdUpdate\" value=\"" + appoinmentId + "\" name=\"hidItemIdUpdate\" type=\"hidden\"> "+ appoinmentId +" </td>";
-				 output += "<td>" + date + "</td>";
-				 output += "<td>" + Dname + "</td>";
-				 output += "<td>" + Hname + "</td>";
-				 output += "<td>" + amount + "</td>";
-				 output += "<td>" + Description + "</td>";
+				output += "<tr><td><input id=\"hidItemIdUpdate\" value=\"" + appoinmentId
+						+ "\" name=\"hidItemIdUpdate\" type=\"hidden\"> " + appoinmentId + " </td>";
+				output += "<td>" + date + "</td>";
+				output += "<td><input id=\"hiddidUpdate\" value=\"" + dId
+						+ "\" name=\"hidItemIdUpdate\" type=\"hidden\">" + Dname + "</td>";
+				output += "<td> <input id=\"hidhidUpdate\" value=\"" + hId
+						+ "\" name=\"hidItemIdUpdate\" type=\"hidden\">" + Hname + "</td>";
+				output += "<td>" + amount + "</td>";
+				output += "<td>" + Description + "</td>";
 
-			 // buttons
-			 output += "<td><input name=\"btnUpdate\" type=\"button\"value=\"Update\" class=\"btnUpdate btn btn-secondary\"></td>"
-					+ "<td><input name=\"btnRemove\" data-appid='"+appoinmentId+"'type=\"submit\" value=\"Remove\"class=\"btnRemove btn btn-danger\"></td></tr>";
+				// buttons
+				output += "<td><input name=\"btnUpdate\" type=\"button\"value=\"Update\" class=\"btnUpdate btn btn-secondary\"></td>"
+						+ "<td><button name=\"btnRemove\" data-itemid='" + appoinmentId + "' type=\"submit\" value=\""
+						+ appoinmentId + "\"class=\"btnRemove btn btn-danger\">Remove</button></td></tr>";
 			}
 			con.close();
 		} catch (Exception e) {
@@ -173,18 +167,14 @@ public class appointment {
 				return resultSet;
 			}
 
-			String query = "SELECT a.appoinmentId,a.appoinmentDate,p.fNmae,d.fName as dname ,py.amount,a.docId,a.hospitalId,a.patientId,a.paymentId " + 
-					"FROM appoinment a " + 
-					"INNER JOIN payment py " + 
-					"ON a.paymentId = py.paymentId " + 
-					"INNER JOIN doctor d "+ 
-					"ON a.docId = d.docId " + 
-					"INNER JOIN patient p " + 
-					"ON a.patientId = p.patientId "+"WHERE a.hospitalId =? AND a.appoinmentDate =?";
+			String query = "SELECT a.appoinmentId,a.appoinmentDate,p.fNmae,d.fName as dname ,py.amount,a.docId,a.hospitalId,a.patientId,a.paymentId "
+					+ "FROM appoinment a " + "INNER JOIN payment py " + "ON a.paymentId = py.paymentId "
+					+ "INNER JOIN doctor d " + "ON a.docId = d.docId " + "INNER JOIN patient p "
+					+ "ON a.patientId = p.patientId " + "WHERE a.hospitalId =? AND a.appoinmentDate =?";
 			PreparedStatement statement = con.prepareStatement(query);
 
-			statement.setInt(1,hid);
-			statement.setDate(2,java.sql.Date.valueOf(date));
+			statement.setInt(1, hid);
+			statement.setDate(2, java.sql.Date.valueOf(date));
 			ResultSet set = statement.executeQuery();
 
 			while (set.next()) {
@@ -201,17 +191,16 @@ public class appointment {
 				resultSet.add(appointmentPOJO);
 				System.out.println(appointmentPOJO.getAppointmentDate());
 				System.out.println(appointmentPOJO.getAppointmentID());
-			   
-				
+
 			}
 			con.close();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-		
+
 		return resultSet;
 	}
-	
+
 	public String updateappoitment(appointmentPOJO appointmentData) {
 		String output = "";
 
@@ -222,25 +211,27 @@ public class appointment {
 				return "Error while connecting to the database for readline";
 			}
 
-			String sql = "UPDATE `appoinment` SET `appoinmentDate`=?,`docId`=? WHERE `appoinmentId`=?";
+			String sql = "UPDATE `appoinment` SET `appoinmentDate`=?,`docId`=?,`Description`=? WHERE `appoinmentId`=?";
 
 			PreparedStatement statement = con.prepareStatement(sql);
-
-			statement.setDate(1,java.sql.Date.valueOf(appointmentData.getAppointmentDate()));
+			System.out.println(appointmentData.getAppointmentDate() + " " + appointmentData.getDocId() + " "
+					+ appointmentData.getAppointmentID());
+			statement.setDate(1, java.sql.Date.valueOf(appointmentData.getAppointmentDate()));
 			statement.setInt(2, appointmentData.getDocId());
-			statement.setInt(3, appointmentData.getAppointmentID());
+			statement.setString(3, appointmentData.getDescription());
+			statement.setInt(4, appointmentData.getAppointmentID());
 			statement.execute();
-
-			String newRead = getApointment();
-			output = "{\"status\":,\"success\",\"data\":\""+newRead+"\"}";
 			con.close();
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-
-		return output;
+		String newRead = getApointment();
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("status", "success");
+		jsonObject.addProperty("data", newRead);
+		return jsonObject.toString();
 	}
 
 	public String deleteappoitment(appointmentPOJO appointmentData) {
@@ -259,8 +250,6 @@ public class appointment {
 			statement.setInt(1, appointmentData.getAppointmentID());
 			statement.execute();
 
-			String newRead = getApointment();
-			output = "{\"status\":,\"success\",\"data\":\""+newRead+"\"}";
 			con.close();
 
 		} catch (SQLException e) {
@@ -268,9 +257,11 @@ public class appointment {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-
-		return output;
+		String newRead = getApointment();
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("status", "success");
+		jsonObject.addProperty("data", newRead);
+		return jsonObject.toString();
 	}
 
-	
 }
