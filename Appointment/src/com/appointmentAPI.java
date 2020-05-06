@@ -1,6 +1,7 @@
 package com;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -61,7 +62,10 @@ public class appointmentAPI extends HttpServlet {
 		System.out.println(paras.get("AppointmentDate"));
 		appointmentData.setAppointmentID(Integer.parseInt(paras.get("hidItemIDSave").toString()));
 		appointmentData.setAppointmentDate(paras.get("AppointmentDate").toString());
-		appointmentData.setDescription(paras.get("Description").toString());
+		
+		String Description = URLDecoder.decode(paras.get("Description").toString(), "UTF-8");
+		
+		appointmentData.setDescription(Description);
 		appointmentData.setDocId(Integer.parseInt(paras.get("DocId").toString()));
 		appointmentData.setHospitalId(Integer.parseInt(paras.get("HospitalId").toString()));
 		String	 output = appointment.updateappoitment(appointmentData);

@@ -105,9 +105,19 @@ public class appointment {
 
 	public String getApointment() {
 		String output = "";
-		output = "<table border=\'1\'>" + "<tr>" + "<th>appoinmentId</th>" + "<th>appoinmentDate</th>"
-				+ "<th>docter Name</th>" + "<th>hospital Name</th>" + "<th>amount</th>" + "<th>Description</th>"
-				+ "<th>Update</th>" + "<th>Remove</th>" + "</tr>";
+		output = "<table class=\"table\">" 
+				+"<thead>"
+		        + "<tr>" 
+				+ "<th>Appoinment ID</th>" 
+		        + "<th>Appoinment Date</th>"
+				+ "<th>Docter Name</th>"
+		        + "<th>Hospital Name</th>"
+				+ "<th>Amount</th>"
+		        + "<th>Description</th>"
+				+ "<th>Update</th>"
+		        + "<th>Remove</th>"
+				+ "</tr>"
+		        +"</thead>";
 		try {
 			Connection con = connect();
 
